@@ -5,23 +5,35 @@ import android.app.Application;
 import android.content.Context;
 import android.content.SharedPreferences;
 import android.os.StrictMode;
+import android.widget.ImageView;
 
+import com.bumptech.glide.GenericRequestBuilder;
+import com.bumptech.glide.Glide;
+import com.bumptech.glide.load.engine.DiskCacheStrategy;
+import com.bumptech.glide.request.target.GlideDrawableImageViewTarget;
 import com.layer.atlas.messagetypes.text.TextCellFactory;
 import com.layer.atlas.messagetypes.threepartimage.ThreePartImageUtils;
+import com.layer.atlas.tenor.messagetype.gif.GifLoaderClient;
+import com.layer.atlas.tenor.messagetype.threepartgif.GifInfo;
+import com.layer.atlas.tenor.messagetype.threepartgif.ThreePartGifUtils;
 import com.layer.atlas.util.Util;
 import com.layer.atlas.util.picasso.requesthandlers.MessagePartRequestHandler;
-import com.layer.messenger.util.LayerAuthenticationProvider;
-import com.layer.messenger.util.CustomEndpoint;
+import com.layer.messenger.tenor.network.TenorApiService;
 import com.layer.messenger.util.AuthenticationProvider;
+import com.layer.messenger.util.CustomEndpoint;
+import com.layer.messenger.util.LayerAuthenticationProvider;
 import com.layer.messenger.util.Log;
 import com.layer.sdk.LayerClient;
 import com.squareup.picasso.Picasso;
+import com.tenor.android.core.network.ApiClient;
+import com.tenor.android.core.network.IApiClient;
 
 import java.util.Arrays;
 
 /**
  * App provides static access to a LayerClient and other Atlas and Messenger context, including
  * AuthenticationProvider, ParticipantProvider, Participant, and Picasso.
+ *
  * @see LayerClient
  * @see Picasso
  * @see AuthenticationProvider
@@ -36,6 +48,7 @@ public class App extends Application {
 
     private static Application sInstance;
     private static LayerClient sLayerClient;
+    private static GifLoaderClient sGifLoaderClient;
     private static AuthenticationProvider sAuthProvider;
     private static Picasso sPicasso;
 
@@ -72,6 +85,10 @@ public class App extends Application {
         LayerClient.applicationCreated(this);
 
         sInstance = this;
+
+        TenorApiService.IBuilder<IApiClient> builder = new TenorApiService.Builder<>(this, IApiClient.class,
+                BuildConfig.DEBUG);
+        ApiClient.init(this, builder, null);
     }
 
     public static Application getInstance() {
@@ -167,7 +184,10 @@ public class App extends Application {
                     .autoDownloadMimeTypes(Arrays.asList(
                             TextCellFactory.MIME_TYPE,
                             ThreePartImageUtils.MIME_TYPE_INFO,
-                            ThreePartImageUtils.MIME_TYPE_PREVIEW))
+                            ThreePartImageUtils.MIME_TYPE_PREVIEW,
+                            ThreePartGifUtils.MIME_TYPE_GIF_INFO,
+                            ThreePartGifUtils.MIME_TYPE_GIF_PREVIEW,
+                            ThreePartGifUtils.MIME_TYPE_GIF))
                     .setTelemetryEnabled(telemetryEnabled);
 
             sLayerClient = generateLayerClient(sInstance, options);
@@ -179,6 +199,35 @@ public class App extends Application {
             sLayerClient.registerAuthenticationListener(getAuthenticationProvider());
         }
         return sLayerClient;
+    }
+
+    /**
+     * Stub of {@link GifLoaderClient}
+     */
+    public static GifLoaderClient getGifLoaderClient() {
+        return new GifLoaderClient() {
+
+            @Override
+            public <V extends ImageView> void load(V view, GifInfo info, Callback callback) {
+
+                final int h = Math.round(500f / info.width * info.height);
+                // Glide.with(view.getContext()).load(url).asGif().into(view);
+                GenericRequestBuilder requestBuilder = Glide.with(view.getContext()).load(info.previewPartId).asGif()
+                        .diskCacheStrategy(DiskCacheStrategy.ALL);
+                requestBuilder.override(500, h);
+                requestBuilder.into(new GlideDrawableImageViewTarget(view));
+            }
+
+            @Override
+            public <V extends ImageView> void pause(V view) {
+                Glide.with(view.getContext()).pauseRequests();
+            }
+
+            @Override
+            public <V extends ImageView> void resume(V view) {
+                Glide.with(view.getContext()).resumeRequests();
+            }
+        };
     }
 
     public static AuthenticationProvider getAuthenticationProvider() {

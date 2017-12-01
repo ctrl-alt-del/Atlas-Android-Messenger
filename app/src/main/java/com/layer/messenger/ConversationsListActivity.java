@@ -13,6 +13,7 @@ import com.layer.atlas.messagetypes.location.LocationCellFactory;
 import com.layer.atlas.messagetypes.singlepartimage.SinglePartImageCellFactory;
 import com.layer.atlas.messagetypes.text.TextCellFactory;
 import com.layer.atlas.messagetypes.threepartimage.ThreePartImageCellFactory;
+import com.layer.atlas.tenor.messagetype.threepartgif.ThreePartGifCellFactory;
 import com.layer.atlas.util.views.SwipeableItem;
 import com.layer.messenger.util.Log;
 import com.layer.sdk.LayerClient;
@@ -38,6 +39,7 @@ public class ConversationsListActivity extends BaseActivity {
 
         // Atlas methods
         mConversationsList.init(getLayerClient(), getPicasso())
+                .addCellFactories(new ThreePartGifCellFactory(getLayerClient(), getGifLoaderClient()))
                 .setInitialHistoricMessagesToFetch(20)
                 .setOnConversationClickListener(new AtlasConversationsAdapter.OnConversationClickListener() {
                     @Override

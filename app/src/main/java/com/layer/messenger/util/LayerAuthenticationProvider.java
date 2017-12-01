@@ -4,6 +4,9 @@ import android.app.Activity;
 import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
+import android.support.annotation.NonNull;
+import android.text.TextUtils;
+import android.webkit.URLUtil;
 import android.widget.Toast;
 
 import com.layer.messenger.R;
@@ -144,7 +147,8 @@ public class LayerAuthenticationProvider implements AuthenticationProvider<Layer
         try {
             // Post request
             String url = CustomEndpoint.getEndpoint().getProviderUrl();
-            HttpURLConnection connection = (HttpURLConnection) new URL(url).openConnection();
+
+            HttpURLConnection connection = (HttpURLConnection) new URL(getAuthenticateUrl(url)).openConnection();
             connection.setDoInput(true);
             connection.setDoOutput(true);
             connection.setRequestMethod("POST");
@@ -160,10 +164,8 @@ public class LayerAuthenticationProvider implements AuthenticationProvider<Layer
 
             // Credentials
             JSONObject rootObject = new JSONObject();
-            JSONObject userObject = new JSONObject();
-            rootObject.put("user", userObject);
-            userObject.put("email", credentials.getEmail());
-            userObject.put("password", credentials.getPassword());
+            rootObject.put("email", credentials.getEmail());
+            rootObject.put("password", credentials.getPassword());
             rootObject.put("nonce", nonce);
 
             connection.setRequestProperty("Content-Type", "application/json; charset=UTF-8");
@@ -209,6 +211,19 @@ public class LayerAuthenticationProvider implements AuthenticationProvider<Layer
             if (Log.isLoggable(Log.ERROR)) Log.e(error, e);
             if (mCallback != null) mCallback.onError(this, error);
         }
+    }
+
+    @NonNull
+    private static String getAuthenticateUrl(@NonNull String url) {
+        if (TextUtils.isEmpty(url) || (!URLUtil.isHttpsUrl(url) && !URLUtil.isHttpUrl(url))) {
+            throw new IllegalArgumentException("Not a valid `identity_provider_url`: " + url);
+        }
+
+        if (!url.endsWith("/")) {
+            url += "/";
+        }
+        url += "authenticate";
+        return url;
     }
 
     public static class Credentials {
