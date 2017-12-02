@@ -7,10 +7,10 @@ import android.support.v7.widget.StaggeredGridLayoutManager;
 import android.text.TextUtils;
 import android.util.AttributeSet;
 
-import com.layer.atlas.tenor.messagetype.threepartgif.GifSender;
-import com.layer.messenger.tenor.rvitem.ResultRVItem;
 import com.layer.atlas.tenor.AbstractGifRecyclerView;
+import com.layer.atlas.tenor.messagetype.threepartgif.GifSender;
 import com.layer.atlas.tenor.util.GifSearchQueryClerk;
+import com.layer.messenger.tenor.rvitem.ResultRVItem;
 import com.layer.messenger.util.Log;
 import com.tenor.android.core.constant.StringConstant;
 import com.tenor.android.core.model.impl.Result;
@@ -57,7 +57,7 @@ public class GifRecyclerView extends AbstractGifRecyclerView implements IGifRecy
         final StaggeredGridLayoutManager layoutManager = new StaggeredGridLayoutManager(1, StaggeredGridLayoutManager.HORIZONTAL);
         setLayoutManager(layoutManager);
 
-        addOnScrollListener(new EndlessRVOnScrollListener<GifRecyclerView>(this) {
+        addOnScrollListener(new EndlessRecyclerViewOnScrollListener<GifRecyclerView>(this) {
             @Override
             public void onLoadMore(int currentPage) {
                 loadGifs(true);

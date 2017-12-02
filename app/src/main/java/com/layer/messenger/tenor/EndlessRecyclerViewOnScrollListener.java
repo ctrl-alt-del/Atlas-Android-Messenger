@@ -8,7 +8,7 @@ import com.tenor.android.core.util.AbstractLayoutManagerUtils;
 import com.tenor.android.core.weakref.WeakRefOnScrollListener;
 import com.tenor.android.core.weakref.WeakRefRunnable;
 
-public abstract class EndlessRVOnScrollListener<CTX> extends WeakRefOnScrollListener<CTX> {
+public abstract class EndlessRecyclerViewOnScrollListener<CTX> extends WeakRefOnScrollListener<CTX> {
 
     private static final int VISIBLE_LIMIT = 10; // The minimum amount of items to have below your current scroll position before loading more.
 
@@ -21,20 +21,20 @@ public abstract class EndlessRVOnScrollListener<CTX> extends WeakRefOnScrollList
     private int mCurrentPage;
 
     private final Handler mHandler;
-    private final WeakRefRunnable<EndlessRVOnScrollListener> mLoadingRunnable;
+    private final WeakRefRunnable<EndlessRecyclerViewOnScrollListener> mLoadingRunnable;
     private final int mLimit;
 
-    public EndlessRVOnScrollListener(CTX ctx) {
+    public EndlessRecyclerViewOnScrollListener(CTX ctx) {
         this(ctx, VISIBLE_LIMIT);
     }
 
-    public EndlessRVOnScrollListener(CTX ctx, int limit) {
+    public EndlessRecyclerViewOnScrollListener(CTX ctx, int limit) {
         super(ctx);
         mLimit = limit;
         mHandler = new Handler();
-        mLoadingRunnable = new WeakRefRunnable<EndlessRVOnScrollListener>(this) {
+        mLoadingRunnable = new WeakRefRunnable<EndlessRecyclerViewOnScrollListener>(this) {
             @Override
-            public void run(@NonNull EndlessRVOnScrollListener endlessRVOnScrollListener) {
+            public void run(@NonNull EndlessRecyclerViewOnScrollListener endlessRVOnScrollListener) {
                 mLoading = false;
             }
         };
