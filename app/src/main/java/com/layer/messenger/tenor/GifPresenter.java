@@ -24,7 +24,7 @@ public class GifPresenter extends BasePresenter<IGifRecyclerView> implements IGi
     }
 
     @Override
-    public Call<GifsResponse> search(String query, String locale, int limit, String pos, String type, final boolean isAppend) {
+    public Call<GifsResponse> search(final String query, String locale, int limit, String pos, String type, final boolean append) {
 
         final String qry = StringConstant.getOrEmpty(query);
 
@@ -32,7 +32,7 @@ public class GifPresenter extends BasePresenter<IGifRecyclerView> implements IGi
                 ApiClient.getServiceIds(getView().getContext()),
                 qry, limit, StringConstant.getOrEmpty(pos), MediaFilter.BASIC, AspectRatioRange.ALL);
 
-        call.enqueue(new OnSearchCallEnqueuedCallback(getView(), isAppend));
+        call.enqueue(new OnSearchCallEnqueuedCallback(getView(), query, append));
         return call;
     }
 
@@ -49,14 +49,16 @@ public class GifPresenter extends BasePresenter<IGifRecyclerView> implements IGi
     private class OnSearchCallEnqueuedCallback
             extends WeakRefCallback<IGifRecyclerView, GifsResponse> {
 
+        private final String mQuery;
         private final boolean mAppend;
 
-        public OnSearchCallEnqueuedCallback(@NonNull IGifRecyclerView view, boolean append) {
-            this(new WeakReference<>(view), append);
+        public OnSearchCallEnqueuedCallback(@NonNull IGifRecyclerView view, @NonNull String query, boolean append) {
+            this(new WeakReference<>(view), query, append);
         }
 
-        public OnSearchCallEnqueuedCallback(@NonNull WeakReference<IGifRecyclerView> weakRef, boolean append) {
+        public OnSearchCallEnqueuedCallback(@NonNull WeakReference<IGifRecyclerView> weakRef, @NonNull String query, boolean append) {
             super(weakRef);
+            mQuery = query;
             mAppend = append;
         }
 
@@ -65,7 +67,7 @@ public class GifPresenter extends BasePresenter<IGifRecyclerView> implements IGi
             if (response == null) {
                 return;
             }
-            view.onReceiveSearchResultsSucceed(response, mAppend);
+            view.onReceiveSearchResultsSucceed(mQuery, response, mAppend);
         }
 
         @Override

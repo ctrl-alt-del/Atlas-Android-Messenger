@@ -94,18 +94,20 @@ public class GifRecyclerView extends AbstractGifRecyclerView implements IGifRecy
     }
 
     @Override
-    public void onReceiveSearchResultsSucceed(@NonNull GifsResponse response, boolean isAppend) {
+    public void onReceiveSearchResultsSucceed(@NonNull String query, @NonNull GifsResponse response, boolean isAppend) {
         List<AbstractRVItem> items = new ArrayList<>();
 
         for (Result result : response.getResults()) {
-            items.add(new ResultRVItem(GifAdapter.TYPE_GIF, result));
+            items.add(new ResultRVItem(GifAdapter.TYPE_GIF, result, query));
         }
+        mAdapter.setQuery(query);
         mAdapter.insert(items, isAppend);
         mNextPageId = response.getNext();
     }
 
     @Override
     public void onReceiveSearchResultsFailed(@Nullable BaseError error) {
+        mAdapter.setQuery(StringConstant.EMPTY);
         Log.e(error != null ? error.getMessage() : "onReceiveSearchResultsFailed...");
     }
 
@@ -116,18 +118,19 @@ public class GifRecyclerView extends AbstractGifRecyclerView implements IGifRecy
         for (Result result : list) {
             items.add(new ResultRVItem(GifAdapter.TYPE_GIF, result));
         }
+        mAdapter.setQuery(StringConstant.EMPTY);
         mAdapter.insert(items, isAppend);
         mNextPageId = nextPageId;
     }
 
     @Override
     public void onReceiveTrendingFailed(@Nullable BaseError error) {
+        mAdapter.setQuery(StringConstant.EMPTY);
         Log.e(error != null ? error.getMessage() : "onReceiveTrendingFailed...");
     }
 
     @Override
     public void setGifSender(GifSender sender) {
-        super.setGifSender(sender);
         mAdapter.setGifSender(sender);
     }
 }

@@ -7,7 +7,8 @@ import android.view.View;
 import android.view.ViewGroup;
 
 import com.layer.atlas.R;
-import com.layer.atlas.tenor.adapter.OnDismissPopupWindowListener;
+import com.layer.atlas.tenor.adapter.IGifAdapter;
+import com.layer.atlas.tenor.adapter.OnSendGifListener;
 import com.layer.atlas.tenor.messagetype.threepartgif.GifSender;
 import com.layer.messenger.tenor.holder.GifSelectionViewHolder;
 import com.layer.messenger.tenor.rvitem.ResultRVItem;
@@ -21,16 +22,20 @@ import com.tenor.android.core.widget.viewholder.StaggeredGridLayoutItemViewHolde
 import java.util.List;
 import java.util.Map;
 
-public class GifAdapter<CTX extends IBaseView> extends ListRVAdapter<CTX, AbstractRVItem, StaggeredGridLayoutItemViewHolder<CTX>> {
+public class GifAdapter<CTX extends IBaseView>
+        extends ListRVAdapter<CTX, AbstractRVItem, StaggeredGridLayoutItemViewHolder<CTX>>
+        implements IGifAdapter {
 
     private static int ITEM_HEIGHT;
     public final static int TYPE_LOADING = -1;
     public final static int TYPE_GIF = 0;
     private Map<String, Integer> mWidths;
     private GifSender mGifSender;
-    private OnDismissPopupWindowListener mListener;
+    private OnSendGifListener mListener;
 
-    private static final AbstractRVItem ITEM_LOADING = new AbstractRVItem(TYPE_LOADING){};
+    private static final AbstractRVItem ITEM_LOADING = new AbstractRVItem(TYPE_LOADING) {
+    };
+    private String mQuery;
 
     public GifAdapter(CTX context) {
         super(context);
@@ -40,12 +45,7 @@ public class GifAdapter<CTX extends IBaseView> extends ListRVAdapter<CTX, Abstra
         }
     }
 
-    @Nullable
-    public OnDismissPopupWindowListener getDismissPopupWindowListener() {
-        return mListener;
-    }
-
-    public void setDismissPopupWindowListener(@Nullable OnDismissPopupWindowListener listener) {
+    public void setOnSendGifListener(@Nullable OnSendGifListener listener) {
         mListener = listener;
     }
 
@@ -61,8 +61,14 @@ public class GifAdapter<CTX extends IBaseView> extends ListRVAdapter<CTX, Abstra
         }
     }
 
+    @Override
     public void setGifSender(GifSender gifSender) {
         mGifSender = gifSender;
+    }
+
+    @Override
+    public void setQuery(String query) {
+        mQuery = query;
     }
 
     @Override
@@ -77,7 +83,7 @@ public class GifAdapter<CTX extends IBaseView> extends ListRVAdapter<CTX, Abstra
 
             final ResultRVItem resultRVItem = (ResultRVItem) getList().get(position);
 
-            holder.setImage(resultRVItem.getResult());
+            holder.setImage(resultRVItem.getResult(), mQuery);
             if (mWidths.containsKey(resultRVItem.getId())) {
                 holder.setParams(mWidths.get(resultRVItem.getId()), ITEM_HEIGHT);
             }
@@ -118,16 +124,15 @@ public class GifAdapter<CTX extends IBaseView> extends ListRVAdapter<CTX, Abstra
         }
     }
 
-    protected boolean cacheItemWidth(AbstractRVItem item) {
+    protected void cacheItemWidth(AbstractRVItem item) {
         if (item == null || item.getType() != TYPE_GIF) {
-            return false;
+            return;
         }
 
         final Result result = ((ResultRVItem) item).getResult();
         if (!mWidths.containsKey(result.getId())) {
             mWidths.put(result.getId(), (int) (ITEM_HEIGHT * result.getAspectRatio()));
         }
-        return false;
     }
 
     public void notifyOnGifLoading() {

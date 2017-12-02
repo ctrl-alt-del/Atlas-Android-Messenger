@@ -5,6 +5,7 @@ import android.app.Application;
 import android.content.Context;
 import android.content.SharedPreferences;
 import android.os.StrictMode;
+import android.support.annotation.NonNull;
 import android.widget.ImageView;
 
 import com.bumptech.glide.GenericRequestBuilder;
@@ -16,6 +17,7 @@ import com.layer.atlas.messagetypes.threepartimage.ThreePartImageUtils;
 import com.layer.atlas.tenor.messagetype.gif.GifLoaderClient;
 import com.layer.atlas.tenor.messagetype.threepartgif.GifInfo;
 import com.layer.atlas.tenor.messagetype.threepartgif.ThreePartGifUtils;
+import com.layer.atlas.tenor.model.IMinimalResult;
 import com.layer.atlas.util.Util;
 import com.layer.atlas.util.picasso.requesthandlers.MessagePartRequestHandler;
 import com.layer.messenger.tenor.network.TenorApiService;
@@ -160,6 +162,7 @@ public class App extends Application {
      * Gets or creates a LayerClient, using a default set of LayerClient.Options
      * App ID and Options from the `generateLayerClient` method.  Returns `null` if the App was
      * unable to create a LayerClient (due to no App ID, etc.). Set App Id {@link App.LAYER_APP_ID}
+     *
      * @return New or existing LayerClient, or `null` if a LayerClient could not be constructed.
      */
     public static LayerClient getLayerClient() {
@@ -168,8 +171,7 @@ public class App extends Application {
             SharedPreferences sharedPreferences = sInstance.getSharedPreferences(SHARED_PREFS, MODE_PRIVATE);
             if (sharedPreferences.contains(SHARED_PREFS_KEY_TELEMETRY_ENABLED)) {
                 telemetryEnabled = sharedPreferences.getBoolean(SHARED_PREFS_KEY_TELEMETRY_ENABLED, true);
-            }
-            else {
+            } else {
                 sharedPreferences.edit().putBoolean(SHARED_PREFS_KEY_TELEMETRY_ENABLED, true).apply();
                 telemetryEnabled = true;
             }
@@ -211,7 +213,6 @@ public class App extends Application {
             public <V extends ImageView> void load(V view, GifInfo info, Callback callback) {
 
                 final int h = Math.round(500f / info.width * info.height);
-                // Glide.with(view.getContext()).load(url).asGif().into(view);
                 GenericRequestBuilder requestBuilder = Glide.with(view.getContext()).load(info.previewPartId).asGif()
                         .diskCacheStrategy(DiskCacheStrategy.ALL);
                 requestBuilder.override(500, h);
@@ -226,6 +227,12 @@ public class App extends Application {
             @Override
             public <V extends ImageView> void resume(V view) {
                 Glide.with(view.getContext()).resumeRequests();
+            }
+
+            @Override
+            public <T extends IMinimalResult> void registerShare(@NonNull T result) {
+                // register share to improve the accuracy of search results in the future
+                ApiClient.registerShare(App.getInstance(), result.getId(), result.getQuery());
             }
         };
     }

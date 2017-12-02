@@ -7,14 +7,12 @@ import android.view.View;
 import android.widget.ImageView;
 
 import com.layer.atlas.R;
-import com.layer.atlas.tenor.adapter.OnDismissPopupWindowListener;
+import com.layer.atlas.tenor.adapter.OnSendGifListener;
 import com.layer.atlas.tenor.messagetype.threepartgif.GifSender;
-import com.layer.atlas.tenor.messagetype.threepartgif.ThreePartGifUtils;
 import com.layer.atlas.tenor.model.IMinimalResult;
 import com.tenor.android.core.constant.MediaCollectionFormat;
 import com.tenor.android.core.loader.GlideTaskParams;
 import com.tenor.android.core.loader.gif.GifLoader;
-import com.tenor.android.core.model.impl.Media;
 import com.tenor.android.core.model.impl.MediaCollection;
 import com.tenor.android.core.model.impl.Result;
 import com.tenor.android.core.util.AbstractListUtils;
@@ -29,11 +27,11 @@ public class GifSelectionViewHolder<CTX extends IBaseView> extends StaggeredGrid
 
     private MinimalResult mMinimalResult;
     private GifSender mGifSender;
-    private OnDismissPopupWindowListener mListener;
+    private OnSendGifListener mListener;
 
     public GifSelectionViewHolder(View itemView, CTX context,
                                   @Nullable final GifSender gifSender,
-                                  @Nullable final OnDismissPopupWindowListener listener) {
+                                  @Nullable final OnSendGifListener listener) {
         super(itemView, context);
         mGifSender = gifSender;
         mListener = listener;
@@ -48,28 +46,25 @@ public class GifSelectionViewHolder<CTX extends IBaseView> extends StaggeredGrid
                 mGifSender.send(mMinimalResult);
 
                 if (mListener != null) {
-                    mListener.dismiss();
+                    mListener.onGifSent(mMinimalResult);
                 }
             }
         });
     }
 
-    public void setImage(@Nullable Result result) {
+    public void setImage(@Nullable Result result, @NonNull String query) {
         if (result == null) {
             return;
         }
 
         final int placeholderColor = Color.parseColor(result.getPlaceholderColorHex());
-        mMinimalResult = new MinimalResult(result);
+        mMinimalResult = new MinimalResult(result, query);
         // normal load to display
         List<MediaCollection> mediaCollections = result.getMedias();
         if (AbstractListUtils.isEmpty(mediaCollections)) {
             return;
         }
 
-//            final float density = AbstractUIUtils.getScreenDensity(getActivity());
-//            payload.setWidth(Math.round(media.getWidth() * density));
-//            payload.setHeight(Math.round(media.getHeight() * density));
         final GlideTaskParams<ImageView> payload = new GlideTaskParams<>(mImageView, mMinimalResult.getPreviewUrl());
         payload.setPlaceholder(placeholderColor);
         GifLoader.loadGif(getContext(), payload);
@@ -78,9 +73,17 @@ public class GifSelectionViewHolder<CTX extends IBaseView> extends StaggeredGrid
     private static class MinimalResult implements IMinimalResult {
 
         private final Result mResult;
+        private final String mQuery;
 
-        public MinimalResult(Result result) {
+        public MinimalResult(@NonNull Result result, @NonNull String query) {
             mResult = result;
+            mQuery = query;
+        }
+
+        @NonNull
+        @Override
+        public String getQuery() {
+            return mQuery;
         }
 
         @NonNull

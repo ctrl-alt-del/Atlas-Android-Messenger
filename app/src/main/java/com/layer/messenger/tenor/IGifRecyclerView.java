@@ -22,7 +22,7 @@ public interface IGifRecyclerView extends IBaseView {
         Call<TrendingGifResponse> getTrending(int limit, String pos, String type, boolean isAppend);
     }
 
-    void onReceiveSearchResultsSucceed(@NonNull GifsResponse response, boolean isAppend);
+    void onReceiveSearchResultsSucceed(@NonNull String query, @NonNull GifsResponse response, boolean isAppend);
 
     void onReceiveSearchResultsFailed(@Nullable BaseError error);
 

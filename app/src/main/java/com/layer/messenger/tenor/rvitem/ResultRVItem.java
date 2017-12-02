@@ -7,15 +7,32 @@ import com.tenor.android.core.widget.adapter.AbstractRVItem;
 
 public class ResultRVItem extends AbstractRVItem {
 
-    private Result mResult;
+    private final String mQuery;
+    private final Result mResult;
 
-    public ResultRVItem(int type, @NonNull final Result result) {
+    /**
+     * For trending items
+     */
+    public ResultRVItem(int type, @NonNull Result result) {
+        this(type, result, "");
+    }
+
+    /**
+     * For search items
+     */
+    public ResultRVItem(int type, @NonNull Result result, @NonNull String query) {
         super(type, result.getId());
+        mQuery = query;
         mResult = result;
     }
 
     @NonNull
     public Result getResult() {
         return mResult;
+    }
+
+    @NonNull
+    public String getQuery() {
+        return mQuery;
     }
 }
