@@ -39,7 +39,6 @@ public class ConversationsListActivity extends BaseActivity {
 
         // Atlas methods
         mConversationsList.init(getLayerClient(), getPicasso())
-                .addCellFactories(new ThreePartGifCellFactory(getLayerClient(), getGifLoaderClient()))
                 .setInitialHistoricMessagesToFetch(20)
                 .setOnConversationClickListener(new AtlasConversationsAdapter.OnConversationClickListener() {
                     @Override
@@ -60,7 +59,8 @@ public class ConversationsListActivity extends BaseActivity {
                 .addCellFactories(new TextCellFactory(),
                         new ThreePartImageCellFactory(getLayerClient(), getPicasso()),
                         new SinglePartImageCellFactory(getLayerClient(), getPicasso()),
-                        new LocationCellFactory(getPicasso()))
+                        new LocationCellFactory(getPicasso()),
+                        new ThreePartGifCellFactory(getLayerClient(), getGifLoaderClient()))
                 .setOnConversationSwipeListener(new SwipeableItem.OnSwipeListener<Conversation>() {
                     @Override
                     public void onSwipe(final Conversation conversation, int direction) {
